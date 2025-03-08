@@ -4,7 +4,7 @@ import { getAssociatedTokenAddress, getOrCreateAssociatedTokenAccount, createTra
 import { WalletProvider, useWallet } from "@solana/wallet-adapter-react";
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
 import { SolflareWalletAdapter } from "@solana/wallet-adapter-solflare";
-import { WalletModalProvider, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { WalletModalProvider, WalletConnectButton } from "@solana/wallet-adapter-react-ui";
 
 // Helius RPC URL
 const connection = new Connection("https://mainnet.helius-rpc.com/?api-key=85a0c15f-2d67-4170-b9e1-64e56f59c1f7", "confirmed");
@@ -101,7 +101,7 @@ const ExchangeComponent = () => {
         <div className="flex justify-center items-center h-screen bg-[#143021]">
             <div className="bg-[#143021] p-8 rounded-lg shadow-lg max-w-md w-full text-center border border-gray-600">
                 <h1 className="text-white text-4xl font-anta mb-6">PRESALE</h1>
-                <WalletMultiButton  />
+                <WalletConnectButton  />
 
                 {connected && (
                     <>
