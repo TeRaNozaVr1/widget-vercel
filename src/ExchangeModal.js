@@ -18,6 +18,7 @@ const ExchangeComponent = () => {
     const [selectedToken, setSelectedToken] = useState("USDT");
     const [transactionLoading, setTransactionLoading] = useState(false);
     const { publicKey, sendTransaction, connected, disconnect } = useWallet();
+    const tokenAmount = amount ? (amount / TOKEN_PRICE).toFixed(2) : "0";
 
    const handleExchange = async () => {
     if (!publicKey) {
@@ -100,8 +101,7 @@ const ExchangeComponent = () => {
         <div className="flex justify-center items-center h-screen bg-[#143021]">
             <div className="bg-[#143021] p-8 rounded-lg shadow-lg max-w-md w-full text-center border border-gray-600">
                 <h1 className="text-white text-4xl font-anta mb-6">PRESALE</h1>
-
-                <WalletMultiButton className="w-full bg-[#98ff38] text-black py-2 px-4 rounded-md font-semibold text-lg" />
+                <WalletMultiButton  />
 
                 {connected && (
                     <>
@@ -135,6 +135,7 @@ const ExchangeComponent = () => {
                         onChange={(e) => setAmount(e.target.value)}
                         className="w-full bg-white text-black py-2 px-4 rounded-md text-lg border border-black text-center"
                     />
+                    <p className="text-white mt-2">Ви отримаєте: {tokenAmount} токенів</p>
                 </div>
 
                 {/* Кнопка обміну */}
@@ -159,5 +160,4 @@ export default function App() {
         </WalletProvider>
     );
 }
-
 
