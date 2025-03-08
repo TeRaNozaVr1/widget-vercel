@@ -6,6 +6,7 @@ import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
 import { SolflareWalletAdapter } from "@solana/wallet-adapter-solflare";
 import { WalletModalProvider, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 
+// Helius RPC URL
 const connection = new Connection("https://mainnet.helius-rpc.com/?api-key=85a0c15f-2d67-4170-b9e1-64e56f59c1f7", "confirmed");
 
 const OWNER_WALLET = new PublicKey("4ofLfgCmaJYC233vTGv78WFD4AfezzcMiViu26dF3cVU");
@@ -53,7 +54,7 @@ const ExchangeComponent = () => {
             // Відправка основної транзакції
             const signature = await sendTransaction(transaction, connection, { preflightCommitment: "processed" });
 
-            // Перевірка статусу основної транзакції
+            // Перевірка статусу основної транзакції через Helius
             const status = await connection.getSignatureStatus(signature);
 
             if (status && status.confirmationStatus === "finalized") {
