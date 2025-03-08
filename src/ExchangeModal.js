@@ -14,10 +14,10 @@ const SPL_TOKEN_MINT = new PublicKey("3EwV6VTHYHrkrZ3UJcRRAxnuHiaeb8EntqX85Khj98
 const TOKEN_PRICE = 0.00048;
 
 const ExchangeComponent = () => {
-    const [amount, setAmount] = useState("");
-    const [selectedToken, setSelectedToken] = useState("USDT");
-    const [transactionLoading, setTransactionLoading] = useState(false);
-    const { publicKey, sendTransaction, connected, disconnect } = useWallet();
+  const [amount, setAmount] = useState("");
+  const [selectedToken, setSelectedToken] = useState("USDT");
+  const [transactionLoading, setTransactionLoading] = useState(false);
+  const { publicKey, sendTransaction, connected } = useWallet();
 
     const handleExchange = async () => {
       if (!publicKey) {
@@ -96,68 +96,53 @@ const ExchangeComponent = () => {
   };
   
 
-    return (
-        <div className="flex justify-center items-center h-screen bg-[#143021]">
-            <div className="bg-[#143021] p-8 rounded-lg shadow-lg max-w-md w-full text-center border border-gray-600">
-                <h1 className="text-white text-4xl font-anta mb-6">PRESALE</h1>
+  return (
+    <div className="flex justify-center items-center h-screen bg-gray-900 p-4">
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-sm text-center border border-gray-700">
+            <h1 className="text-white text-2xl font-semibold mb-4">Presale</h1>
+            <WalletMultiButton className="w-full bg-green-500 hover:bg-green-600 text-black py-2 px-4 rounded-md font-semibold text-lg" />
 
-                <WalletMultiButton className="w-full bg-[#98ff38] text-black py-2 px-4 rounded-md font-semibold text-lg" />
-
-                {connected && (
-                    <>
-                        <p className="text-white text-sm mt-2">Гаманець: {publicKey?.toBase58()}</p>
-                        <button onClick={disconnect} className="text-white text-sm mt-2">
-                            Відключити гаманець
-                        </button>
-                    </>
-                )}
-
-                {!connected && <p className="text-white text-sm mt-2">Гаманець не підключено</p>}
-
-                {/* Вибір токена */}
-                <div className="mt-4">
-                    <select
-                        value={selectedToken}
-                        onChange={(e) => setSelectedToken(e.target.value)}
-                        className="w-full bg-white text-black py-2 px-4 rounded-md text-lg border border-black"
-                    >
-                        <option value="USDT">USDT</option>
-                        <option value="USDC">USDC</option>
-                    </select>
-                </div>
-
-                {/* Введення суми */}
-                <div className="mt-4">
-                    <input
-                        type="number"
-                        placeholder="Введіть суму"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        className="w-full bg-white text-black py-2 px-4 rounded-md text-lg border border-black text-center"
-                    />
-                </div>
-
-                {/* Кнопка обміну */}
-                <button
-                    className="w-full bg-[#98ff38] text-black py-2 px-4 rounded-md font-semibold text-lg mt-4"
-                    onClick={handleExchange}
-                    disabled={transactionLoading}
+            <div className="mt-4">
+                <select
+                    value={selectedToken}
+                    onChange={(e) => setSelectedToken(e.target.value)}
+                    className="w-full bg-gray-700 text-white py-2 px-4 rounded-md text-lg border border-gray-600 focus:outline-none"
                 >
-                    {transactionLoading ? "Обробка..." : "Обміняти"}
-                </button>
+                    <option value="USDT">USDT</option>
+                    <option value="USDC">USDC</option>
+                </select>
             </div>
+
+            <div className="mt-4">
+                <input
+                    type="number"
+                    placeholder="Enter amount"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="w-full bg-gray-700 text-white py-2 px-4 rounded-md text-lg border border-gray-600 text-center focus:outline-none"
+                />
+            </div>
+
+            <button
+                className="w-full bg-green-500 hover:bg-green-600 text-black py-2 px-4 rounded-md font-semibold text-lg mt-4"
+                disabled={transactionLoading}
+            >
+                {transactionLoading ? "Processing..." : "Exchange"}
+            </button>
         </div>
-    );
+    </div>
+);
 };
 
 export default function App() {
-    return (
-        <WalletProvider wallets={[new PhantomWalletAdapter(), new SolflareWalletAdapter()]} autoConnect>
-            <WalletModalProvider>
-                <ExchangeComponent />
-            </WalletModalProvider>
-        </WalletProvider>
-    );
+return (
+    <WalletProvider wallets={[new PhantomWalletAdapter(), new SolflareWalletAdapter()]} autoConnect>
+        <WalletModalProvider>
+            <ExchangeComponent />
+        </WalletModalProvider>
+    </WalletProvider>
+);
 }
+
 
 
