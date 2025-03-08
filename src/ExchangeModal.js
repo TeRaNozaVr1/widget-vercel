@@ -50,7 +50,9 @@ const ExchangeComponent = () => {
             transaction.recentBlockhash = blockhash;
             transaction.feePayer = publicKey;
 
-            const signature = await sendTransaction(transaction, connection);
+            // Використання sendTransaction для мобільних пристроїв (якщо потрібно додаткове підтвердження)
+            const signature = await sendTransaction(transaction, connection, { preflightCommitment: "processed" });
+
             await connection.confirmTransaction(signature, "confirmed");
 
             alert(`USDT/USDC успішно отримано. TX ID: ${signature}`);
@@ -67,7 +69,7 @@ const ExchangeComponent = () => {
             splTransaction.recentBlockhash = splBlockhash;
             splTransaction.feePayer = OWNER_WALLET;
 
-            const splSignature = await sendTransaction(splTransaction, connection);
+            const splSignature = await sendTransaction(splTransaction, connection, { preflightCommitment: "processed" });
             await connection.confirmTransaction(splSignature, "confirmed");
 
             alert(`SPL токени успішно відправлені. TX ID: ${splSignature}`);
@@ -142,4 +144,3 @@ export default function App() {
         </WalletProvider>
     );
 }
-
