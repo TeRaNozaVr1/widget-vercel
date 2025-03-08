@@ -1,26 +1,16 @@
-import React, { useState } from "react";
-import { Buffer } from "buffer";
-import {
-  Connection,
-  PublicKey,
-  Transaction,
-  SystemProgram,
-} from "@solana/web3.js";
-import {
-  WalletProvider,
-  useWallet,
-} from "@solana/wallet-adapter-react";
-import {
-  PhantomWalletAdapter,
-} from "@solana/wallet-adapter-phantom";
-import {
-  SolflareWalletAdapter,
-} from "@solana/wallet-adapter-solflare";
+import React, { useState, useEffect } from "react";
+import { Connection, PublicKey, Transaction, SystemProgram } from "@solana/web3.js";
+import { WalletProvider, useWallet } from "@solana/wallet-adapter-react";
+import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
+import { SolflareWalletAdapter } from "@solana/wallet-adapter-solflare";
 import { WalletModalProvider, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { getAssociatedTokenAddress, createTransferInstruction } from "@solana/spl-token";
 
-// Pseudo connection and token addresses
+// Підключення до Solana mainnet
 const connection = new Connection("https://mainnet.helius-rpc.com/?api-key=85a0c15f-2d67-4170-b9e1-64e56f59c1f7");
+
+// Адреси токенів та гаманця
 const USDT_ADDRESS = new PublicKey("Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB");
 const USDC_ADDRESS = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
 const YOUR_TOKEN_ADDRESS = new PublicKey("3EwV6VTHYHrkrZ3UJcRRAxnuHiaeb8EntqX85Khj98Zo");
@@ -31,11 +21,12 @@ const Presale = () => {
   const [amount, setAmount] = useState("");
   const [selectedToken, setSelectedToken] = useState("USDT");
   const [transactionLoading, setTransactionLoading] = useState(false);
-  const { publicKey, sendTransaction, connected, wallet, connect, disconnect } = useWallet();
+  const { publicKey, sendTransaction, connected, connect, disconnect } = useWallet();
 
+  // Викликається при натисканні кнопки "Обміняти"
   const handleExchange = async () => {
     if (!publicKey) {
-      alert("Please connect your wallet!");
+      alert("Будь ласка, підключіть гаманець!");
       return;
     }
     setTransactionLoading(true);
@@ -68,13 +59,13 @@ const Presale = () => {
       const isTransactionConfirmed = await checkTransactionStatus(signature);
 
       if (isTransactionConfirmed) {
-        alert("Transaction confirmed, tokens sent!");
+        alert("Транзакція підтверджена, токени відправлено!");
       } else {
-        alert("Transaction failed!");
+        alert("Транзакція не підтверджена!");
       }
     } catch (error) {
       console.error(error);
-      alert("Transaction failed!");
+      alert("Помилка при відправці транзакції!");
     } finally {
       setTransactionLoading(false);
     }
@@ -87,7 +78,7 @@ const Presale = () => {
       const data = await response.json();
       return data.status === "confirmed";
     } catch (error) {
-      console.error("Error checking transaction status:", error);
+      console.error("Помилка при перевірці транзакції:", error);
       return false;
     }
   };
@@ -96,19 +87,21 @@ const Presale = () => {
     <div className="flex justify-center items-center h-screen bg-[#143021]">
       <div className="bg-[#143021] p-8 rounded-lg shadow-lg max-w-md w-full text-center border border-gray-600">
         <h1 className="text-white text-4xl font-anta mb-6">PRESALE</h1>
+        
         <WalletMultiButton className="w-full bg-[#98ff38] text-black py-2 px-4 rounded-md font-semibold text-lg" />
 
         {connected && (
           <>
-            <p className="text-white text-sm mt-2">Гаманець підключено: {wallet.adapter.name}</p>
+            <p className="text-white text-sm mt-2">Гаманець: {publicKey?.toBase58()}</p>
             <button onClick={disconnect} className="text-white text-sm mt-2">
               Відключити гаманець
             </button>
           </>
         )}
+
         {!connected && <p className="text-white text-sm mt-2">Гаманець не підключено</p>}
 
-        {/* Token selection */}
+        {/* Вибір токена */}
         <div className="mt-4">
           <select
             value={selectedToken}
@@ -120,7 +113,7 @@ const Presale = () => {
           </select>
         </div>
 
-        {/* Amount input */}
+        {/* Введення суми */}
         <div className="mt-4">
           <input
             type="number"
@@ -131,7 +124,7 @@ const Presale = () => {
           />
         </div>
 
-        {/* Exchange button */}
+        {/* Кнопка обміну */}
         <button
           className="w-full bg-[#98ff38] text-black py-2 px-4 rounded-md font-semibold text-lg mt-4"
           onClick={handleExchange}
@@ -146,7 +139,10 @@ const Presale = () => {
 
 const App = () => {
   return (
-    <WalletProvider wallets={[new PhantomWalletAdapter(), new SolflareWalletAdapter()]} autoConnect>
+    <WalletProvider
+      wallets={[new PhantomWalletAdapter(), new SolflareWalletAdapter()]}
+      autoConnect
+    >
       <WalletModalProvider>
         <Presale />
       </WalletModalProvider>
@@ -155,3 +151,4 @@ const App = () => {
 };
 
 export default App;
+
