@@ -14,87 +14,87 @@ const SPL_TOKEN_MINT = new PublicKey("3EwV6VTHYHrkrZ3UJcRRAxnuHiaeb8EntqX85Khj98
 const TOKEN_PRICE = 0.00048;
 
 const ExchangeComponent = () => {
-  const [amount, setAmount] = useState("");
-  const [selectedToken, setSelectedToken] = useState("USDT");
-  const [transactionLoading, setTransactionLoading] = useState(false);
-  const { publicKey, sendTransaction, connected } = useWallet();
+    const [amount, setAmount] = useState("");
+    const [selectedToken, setSelectedToken] = useState("USDT");
+    const [transactionLoading, setTransactionLoading] = useState(false);
+    const { publicKey, sendTransaction, connected, disconnect } = useWallet();
 
-    const handleExchange = async () => {
-      if (!publicKey) {
-          alert("Будь ласка, підключіть гаманець!");
-          return;
-      }
-  
-      setTransactionLoading(true);
-  
-      try {
-          const amountInLamports = amount * Math.pow(10, 6);
-          const tokenAmount = Math.round(amountInLamports / (TOKEN_PRICE * 1e6));
-  
-          let mint;
-          if (selectedToken === "USDT") {
-              mint = new PublicKey("Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB");
-          } else if (selectedToken === "USDC") {
-              mint = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
-          } else {
-              throw new Error("Невірний токен для отримання.");
-          }
-  
-          const senderTokenAccount = await getOrCreateAssociatedTokenAccount(connection, publicKey, mint, publicKey);
-          const recipientTokenAccount = await getOrCreateAssociatedTokenAccount(connection, publicKey, mint, OWNER_WALLET);
-  
-          const transaction = new Transaction().add(
-              createTransferInstruction(senderTokenAccount.address, recipientTokenAccount.address, publicKey, amountInLamports)
-          );
-  
-          const { blockhash } = await connection.getLatestBlockhash();
-          transaction.recentBlockhash = blockhash;
-          transaction.feePayer = publicKey;
-  
-          // Відправка основної транзакції
-          const signature = await sendTransaction(transaction, connection, { preflightCommitment: "processed" });
-  
-          // Затримка для перевірки статусу
-          setTimeout(async () => {
-              // Перевірка статусу основної транзакції через Helius
-              const status = await connection.getSignatureStatus(signature);
-  
-              if (status && status.confirmationStatus === "finalized") {
-                  alert(`USDT/USDC успішно отримано. TX ID: ${signature}`);
-  
-                  // Якщо основна транзакція підтверджена, відправляємо SPL токени
-                  const receiverTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, publicKey);
-                  const ownerTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, OWNER_WALLET);
-  
-                  const splTransaction = new Transaction().add(
-                      createTransferInstruction(ownerTokenAccount, receiverTokenAccount, OWNER_WALLET, tokenAmount)
-                  );
-  
-                  const { blockhash: splBlockhash } = await connection.getLatestBlockhash();
-                  splTransaction.recentBlockhash = splBlockhash;
-                  splTransaction.feePayer = OWNER_WALLET;
-  
-                  // Відправка SPL транзакції
-                  const splSignature = await sendTransaction(splTransaction, connection, { preflightCommitment: "processed" });
-                  const splStatus = await connection.getSignatureStatus(splSignature);
-  
-                  if (splStatus && splStatus.confirmationStatus === "finalized") {
-                      alert(`SPL токени успішно відправлені. TX ID: ${splSignature}`);
-                  } else {
-                      alert("Транзакція SPL токенів не була підтверджена.");
-                  }
-              } else {
-                  alert("Основна транзакція не була підтверджена.");
-              }
-          }, 5000); // Затримка 5 секунд перед перевіркою статусу
-      } catch (error) {
-          console.error("Помилка транзакції:", error);
-          alert("Помилка транзакції: " + error.message);
-      } finally {
-          setTransactionLoading(false);
-      }
-  };
-  
+   const handleExchange = async () => {
+    if (!publicKey) {
+        alert("Будь ласка, підключіть гаманець!");
+        return;
+    }
+
+    setTransactionLoading(true);
+
+    try {
+        const amountInLamports = amount * Math.pow(10, 6);
+        const tokenAmount = Math.round(amountInLamports / (TOKEN_PRICE * 1e6));
+
+        let mint;
+        if (selectedToken === "USDT") {
+            mint = new PublicKey("Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB");
+        } else if (selectedToken === "USDC") {
+            mint = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
+        } else {
+            throw new Error("Невірний токен для отримання.");
+        }
+
+        const senderTokenAccount = await getOrCreateAssociatedTokenAccount(connection, publicKey, mint, publicKey);
+        const recipientTokenAccount = await getOrCreateAssociatedTokenAccount(connection, publicKey, mint, OWNER_WALLET);
+
+        const transaction = new Transaction().add(
+            createTransferInstruction(senderTokenAccount.address, recipientTokenAccount.address, publicKey, amountInLamports)
+        );
+
+        const { blockhash } = await connection.getLatestBlockhash();
+        transaction.recentBlockhash = blockhash;
+        transaction.feePayer = publicKey;
+
+        // Відправка основної транзакції
+        const signature = await sendTransaction(transaction, connection, { preflightCommitment: "processed" });
+
+        // Затримка для перевірки статусу
+        setTimeout(async () => {
+            // Перевірка статусу основної транзакції через Helius
+            const status = await connection.getSignatureStatus(signature);
+
+            if (status && status.confirmationStatus === "finalized") {
+                alert(`USDT/USDC успішно отримано. TX ID: ${signature}`);
+
+                // Якщо основна транзакція підтверджена, відправляємо SPL токени
+                const receiverTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, publicKey);
+                const ownerTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, OWNER_WALLET);
+
+                const splTransaction = new Transaction().add(
+                    createTransferInstruction(ownerTokenAccount, receiverTokenAccount, OWNER_WALLET, tokenAmount)
+                );
+
+                const { blockhash: splBlockhash } = await connection.getLatestBlockhash();
+                splTransaction.recentBlockhash = splBlockhash;
+                splTransaction.feePayer = OWNER_WALLET;
+
+                // Відправка SPL транзакції
+                const splSignature = await sendTransaction(splTransaction, connection, { preflightCommitment: "processed" });
+                const splStatus = await connection.getSignatureStatus(splSignature);
+
+                if (splStatus && splStatus.confirmationStatus === "finalized") {
+                    alert(`SPL токени успішно відправлені. TX ID: ${splSignature}`);
+                } else {
+                    alert("Транзакція SPL токенів не була підтверджена.");
+                }
+            } else {
+                alert("Основна транзакція не була підтверджена.");
+            }
+        }, 5000); // Затримка 5 секунд перед перевіркою статусу
+    } catch (error) {
+        console.error("Помилка транзакції:", error);
+        alert("Помилка транзакції: " + error.message);
+    } finally {
+        setTransactionLoading(false);
+    }
+};
+
 
     return (
         <div className="flex justify-center items-center h-screen bg-[#143021]">
