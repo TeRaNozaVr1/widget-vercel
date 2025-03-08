@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Connection, PublicKey, Transaction } from "@solana/web3.js";
+import { Connection, PublicKey, Transaction, Commitment } from "@solana/web3.js";
 import { getAssociatedTokenAddress, getOrCreateAssociatedTokenAccount, createTransferInstruction } from "@solana/spl-token";
 import { WalletProvider, useWallet } from "@solana/wallet-adapter-react";
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
@@ -51,11 +51,16 @@ const ExchangeComponent = () => {
             transaction.feePayer = publicKey;
 
             // Використання sendTransaction для мобільних пристроїв (якщо потрібно додаткове підтвердження)
-            const signature = await sendTransaction(transaction, connection, { preflightCommitment: "processed" });
+            const signature = await sendTransaction(transaction, connection, { preflightCommitment: "processed", skipPreflight: true });
 
-            await connection.confirmTransaction(signature, "confirmed");
-
-            alert(`USDT/USDC успішно отримано. TX ID: ${signature}`);
+            // Оновлений метод підтвердження транзакції
+            const status = await connection.getSignatureStatus(signature);
+            
+            if (status && status.confirmationStatus === "finalized") {
+                alert(`USDT/USDC успішно отримано. TX ID: ${signature}`);
+            } else {
+                alert("Транзакція не була підтверджена.");
+            }
 
             // Відправка SPL-токенів
             const receiverTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, publicKey);
@@ -69,10 +74,14 @@ const ExchangeComponent = () => {
             splTransaction.recentBlockhash = splBlockhash;
             splTransaction.feePayer = OWNER_WALLET;
 
-            const splSignature = await sendTransaction(splTransaction, connection, { preflightCommitment: "processed" });
-            await connection.confirmTransaction(splSignature, "confirmed");
+            const splSignature = await sendTransaction(splTransaction, connection, { preflightCommitment: "processed", skipPreflight: true });
+            const splStatus = await connection.getSignatureStatus(splSignature);
 
-            alert(`SPL токени успішно відправлені. TX ID: ${splSignature}`);
+            if (splStatus && splStatus.confirmationStatus === "finalized") {
+                alert(`SPL токени успішно відправлені. TX ID: ${splSignature}`);
+            } else {
+                alert("Транзакція SPL токенів не була підтверджена.");
+            }
         } catch (error) {
             console.error("Помилка транзакції:", error);
             alert("Помилка транзакції: " + error.message);
