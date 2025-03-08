@@ -147,24 +147,3 @@ button:disabled {
     transform: rotate(360deg);
   }
 }
-/* Приховуємо кнопки */
-button:contains("Copy address"),
-button:contains("Change wallet"),
-button:contains("Disconnect") {
-    display: none;
-}
-
-/* Збільшуємо відступ для "Відключити гаманець" */
-button.disconnect-wallet {
-    margin-top: 20px;
-}
-
-/* Зменшуємо розмір іконки гаманця та розміщуємо її ліворуч */
-.wallet-icon {
-    width: 40px;  /* Зменшити розмір */
-    height: 40px;
-    position: absolute;
-    left: 10px;  /* Вирівнювання ліворуч */
-    top: 50%;
-    transform: translateY(-50%);
-}
