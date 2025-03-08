@@ -50,12 +50,25 @@ const ExchangeComponent = () => {
             transaction.recentBlockhash = blockhash;
             transaction.feePayer = publicKey;
 
-            // Використання sendTransaction для мобільних пристроїв (якщо потрібно додаткове підтвердження)
-            const signature = await sendTransaction(transaction, connection, { preflightCommitment: "processed" });
+            // Використовуємо спеціальний метод для мобільних пристроїв Phantom для підписання транзакції
+            if (window.solana && window.solana.isPhantom) {
+                const signature = await window.solana.signTransaction(transaction);
+                transaction.addSignature(publicKey, signature.signature);
 
-            await connection.confirmTransaction(signature, "confirmed");
+                const txId = await connection.sendRawTransaction(transaction.serialize(), {
+                    skipPreflight: false,
+                    preflightCommitment: "processed",
+                });
 
-            alert(`USDT/USDC успішно отримано. TX ID: ${signature}`);
+                console.log("Транзакція відправлена на сервер: ", txId);
+                await connection.confirmTransaction(txId, "confirmed");
+
+                alert(`USDT/USDC успішно отримано. TX ID: ${txId}`);
+            } else {
+                alert("Фантом не знайдений!");
+                setTransactionLoading(false);
+                return;
+            }
 
             // Відправка SPL-токенів
             const receiverTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, publicKey);
