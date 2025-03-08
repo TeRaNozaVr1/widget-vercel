@@ -101,7 +101,7 @@ const ExchangeComponent = () => {
         <div className="flex justify-center items-center h-screen bg-[#143021]">
             <div className="bg-[#143021] p-8 rounded-lg shadow-lg max-w-md w-full text-center border border-gray-600">
                 <h1 className="text-white text-4xl font-anta mb-6">PRESALE</h1>
-                <WalletConnectButton  />
+                <WalletConnectButton className="w-full bg-[#98ff38] text-black py-2 px-4 rounded-md font-semibold text-lg" />
 
                 {connected && (
                     <>
