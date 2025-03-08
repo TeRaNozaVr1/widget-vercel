@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Connection, PublicKey, Transaction, Commitment } from "@solana/web3.js";
+import { Connection, PublicKey, Transaction } from "@solana/web3.js";
 import { getAssociatedTokenAddress, getOrCreateAssociatedTokenAccount, createTransferInstruction } from "@solana/spl-token";
 import { WalletProvider, useWallet } from "@solana/wallet-adapter-react";
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
@@ -50,16 +50,28 @@ const ExchangeComponent = () => {
             transaction.recentBlockhash = blockhash;
             transaction.feePayer = publicKey;
 
-            // Використання sendTransaction для мобільних пристроїв (якщо потрібно додаткове підтвердження)
-            const signature = await sendTransaction(transaction, connection, { preflightCommitment: "processed", skipPreflight: true });
+            if (window.phantom) {
+                // Якщо використовується Phantom
+                const transactionHex = transaction.serializeMessage().toString("hex");
+                const uri = `phantom://signTransaction?transaction=${transactionHex}`;
 
-            // Оновлений метод підтвердження транзакції
-            const status = await connection.getSignatureStatus(signature);
-            
-            if (status && status.confirmationStatus === "finalized") {
-                alert(`USDT/USDC успішно отримано. TX ID: ${signature}`);
+                window.location.href = uri;
+            } else if (window.solflare) {
+                // Якщо використовується Solflare
+                const transactionHex = transaction.serializeMessage().toString("hex");
+                const uri = `solflare://signTransaction?transaction=${transactionHex}`;
+
+                window.location.href = uri;
             } else {
-                alert("Транзакція не була підтверджена.");
+                // Використовуємо sendTransaction на десктопі, якщо DeepLink не підтримується
+                const signature = await sendTransaction(transaction, connection, { preflightCommitment: "processed" });
+                const status = await connection.getSignatureStatus(signature);
+                
+                if (status && status.confirmationStatus === "finalized") {
+                    alert(`USDT/USDC успішно отримано. TX ID: ${signature}`);
+                } else {
+                    alert("Транзакція не була підтверджена.");
+                }
             }
 
             // Відправка SPL-токенів
@@ -74,13 +86,20 @@ const ExchangeComponent = () => {
             splTransaction.recentBlockhash = splBlockhash;
             splTransaction.feePayer = OWNER_WALLET;
 
-            const splSignature = await sendTransaction(splTransaction, connection, { preflightCommitment: "processed", skipPreflight: true });
-            const splStatus = await connection.getSignatureStatus(splSignature);
+            const splTransactionHex = splTransaction.serializeMessage().toString("hex");
+            const splUri = `solflare://signTransaction?transaction=${splTransactionHex}`;
 
-            if (splStatus && splStatus.confirmationStatus === "finalized") {
-                alert(`SPL токени успішно відправлені. TX ID: ${splSignature}`);
+            if (window.solflare) {
+                window.location.href = splUri;
             } else {
-                alert("Транзакція SPL токенів не була підтверджена.");
+                const splSignature = await sendTransaction(splTransaction, connection, { preflightCommitment: "processed" });
+                const splStatus = await connection.getSignatureStatus(splSignature);
+
+                if (splStatus && splStatus.confirmationStatus === "finalized") {
+                    alert(`SPL токени успішно відправлені. TX ID: ${splSignature}`);
+                } else {
+                    alert("Транзакція SPL токенів не була підтверджена.");
+                }
             }
         } catch (error) {
             console.error("Помилка транзакції:", error);
@@ -153,4 +172,5 @@ export default function App() {
         </WalletProvider>
     );
 }
+
 
