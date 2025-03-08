@@ -50,48 +50,28 @@ const ExchangeComponent = () => {
             transaction.recentBlockhash = blockhash;
             transaction.feePayer = publicKey;
 
-            if (window.phantom) {
-                // Якщо використовується Phantom
-                const transactionHex = transaction.serializeMessage().toString("hex");
-                const uri = `phantom://signTransaction?transaction=${transactionHex}`;
+            // Відправка основної транзакції
+            const signature = await sendTransaction(transaction, connection, { preflightCommitment: "processed" });
 
-                window.location.href = uri;
-            } else if (window.solflare) {
-                // Якщо використовується Solflare
-                const transactionHex = transaction.serializeMessage().toString("hex");
-                const uri = `solflare://signTransaction?transaction=${transactionHex}`;
+            // Перевірка статусу основної транзакції
+            const status = await connection.getSignatureStatus(signature);
 
-                window.location.href = uri;
-            } else {
-                // Використовуємо sendTransaction на десктопі, якщо DeepLink не підтримується
-                const signature = await sendTransaction(transaction, connection, { preflightCommitment: "processed" });
-                const status = await connection.getSignatureStatus(signature);
-                
-                if (status && status.confirmationStatus === "finalized") {
-                    alert(`USDT/USDC успішно отримано. TX ID: ${signature}`);
-                } else {
-                    alert("Транзакція не була підтверджена.");
-                }
-            }
+            if (status && status.confirmationStatus === "finalized") {
+                alert(`USDT/USDC успішно отримано. TX ID: ${signature}`);
 
-            // Відправка SPL-токенів
-            const receiverTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, publicKey);
-            const ownerTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, OWNER_WALLET);
+                // Якщо основна транзакція підтверджена, відправляємо SPL токени
+                const receiverTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, publicKey);
+                const ownerTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, OWNER_WALLET);
 
-            const splTransaction = new Transaction().add(
-                createTransferInstruction(ownerTokenAccount, receiverTokenAccount, OWNER_WALLET, tokenAmount)
-            );
+                const splTransaction = new Transaction().add(
+                    createTransferInstruction(ownerTokenAccount, receiverTokenAccount, OWNER_WALLET, tokenAmount)
+                );
 
-            const { blockhash: splBlockhash } = await connection.getLatestBlockhash();
-            splTransaction.recentBlockhash = splBlockhash;
-            splTransaction.feePayer = OWNER_WALLET;
+                const { blockhash: splBlockhash } = await connection.getLatestBlockhash();
+                splTransaction.recentBlockhash = splBlockhash;
+                splTransaction.feePayer = OWNER_WALLET;
 
-            const splTransactionHex = splTransaction.serializeMessage().toString("hex");
-            const splUri = `solflare://signTransaction?transaction=${splTransactionHex}`;
-
-            if (window.solflare) {
-                window.location.href = splUri;
-            } else {
+                // Відправка SPL транзакції
                 const splSignature = await sendTransaction(splTransaction, connection, { preflightCommitment: "processed" });
                 const splStatus = await connection.getSignatureStatus(splSignature);
 
@@ -100,6 +80,8 @@ const ExchangeComponent = () => {
                 } else {
                     alert("Транзакція SPL токенів не була підтверджена.");
                 }
+            } else {
+                alert("Основна транзакція не була підтверджена.");
             }
         } catch (error) {
             console.error("Помилка транзакції:", error);
