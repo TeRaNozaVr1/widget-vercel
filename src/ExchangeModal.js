@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Connection, PublicKey, Transaction } from "@solana/web3.js";
 import { getAssociatedTokenAddress, getOrCreateAssociatedTokenAccount, createTransferInstruction } from "@solana/spl-token";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
 import { SolflareWalletAdapter } from "@solana/wallet-adapter-solflare";
@@ -97,12 +99,11 @@ const ExchangeComponent = () => {
 };
 
 
-   return (
+return (
     <div className="flex justify-center items-center h-screen bg-[#143021]">
         <div className="bg-[#143021] p-8 rounded-lg shadow-lg max-w-md w-full text-center border border-gray-600">
             <h1 className="text-white text-4xl font-anta mb-6">PRESALE</h1>
             <WalletConnectButton />
-
             {connected && (
                 <>
                     <p className="text-white text-sm mt-2">Гаманець: {publicKey?.toBase58()}</p>
@@ -111,9 +112,8 @@ const ExchangeComponent = () => {
                     </button>
                 </>
             )}
-
             {!connected && <p className="text-white text-sm mt-2">Гаманець не підключено</p>}
-     
+        
 
                 {/* Вибір токена */}
                 <div className="mt-4">
