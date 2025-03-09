@@ -1,26 +1,35 @@
 import React, { useState } from "react";
-import { Connection, PublicKey, Transaction, Keypair } from "@solana/web3.js";
-import { getAssociatedTokenAddress, getOrCreateAssociatedTokenAccount, createTransferInstruction } from "@solana/spl-token";
+import { Connection, PublicKey, Transaction } from "@solana/web3.js";
+import {
+  getAssociatedTokenAddress,
+  getOrCreateAssociatedTokenAccount,
+  createTransferInstruction,
+} from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
-import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
-import { SolflareWalletAdapter } from "@solana/wallet-adapter-solflare";
-import { WalletModalProvider, WalletConnectButton } from "@solana/wallet-adapter-react-ui";
+import {
+  ConnectionProvider,
+  WalletProvider,
+} from "@solana/wallet-adapter-react";
+import {
+  PhantomWalletAdapter,
+  SolflareWalletAdapter,
+} from "@solana/wallet-adapter-wallets";
+import {
+  WalletModalProvider,
+  WalletMultiButton,
+} from "@solana/wallet-adapter-react-ui";
 
-// Helius RPC URL
 const connection = new Connection("https://mainnet.helius-rpc.com/?api-key=85a0c15f-2d67-4170-b9e1-64e56f59c1f7", "confirmed");
-
 const OWNER_WALLET = new PublicKey("4ofLfgCmaJYC233vTGv78WFD4AfezzcMiViu26dF3cVU");
 const SPL_TOKEN_MINT = new PublicKey("3EwV6VTHYHrkrZ3UJcRRAxnuHiaeb8EntqX85Khj98Zo");
 const TOKEN_PRICE = 0.00048;
 
-
 const ExchangeComponent = () => {
-    const [amount, setAmount] = useState("");
-    const [selectedToken, setSelectedToken] = useState("USDT");
-    const [transactionLoading, setTransactionLoading] = useState(false);
-    const { publicKey, sendTransaction, connected, disconnect } = useWallet();
-    const tokenAmount = amount ? (amount / TOKEN_PRICE).toFixed(2) : "0";
+  const [amount, setAmount] = useState("");
+  const [selectedToken, setSelectedToken] = useState("USDT");
+  const [transactionLoading, setTransactionLoading] = useState(false);
+  const { publicKey, sendTransaction, connected, disconnect } = useWallet();
+  const tokenAmount = amount ? (amount / TOKEN_PRICE).toFixed(2) : "0";
 
 
   const handleExchange = async () => {
@@ -97,62 +106,54 @@ const ExchangeComponent = () => {
     };
 
     return (
-        <div className="flex justify-center items-center h-screen bg-[#143021]">
-            <div className="bg-[#143021] p-8 rounded-lg shadow-lg max-w-md w-full text-center border border-gray-600">
-                <h1 className="text-white text-4xl font-anta mb-6">PRESALE</h1>
-                <WalletConnectButton />
-                {connected && (
-                    <>
-                        <p className="text-white text-sm mt-2">Гаманець: {publicKey?.toBase58()}</p>
-                        <button onClick={disconnect} className="text-white text-sm mt-2">
-                            Відключити гаманець
-                        </button>
-                    </>
-                )}
-                {!connected && <p className="text-white text-sm mt-2">Гаманець не підключено</p>}
-                <div className="mt-4">
-                    <select
-                        value={selectedToken}
-                        onChange={(e) => setSelectedToken(e.target.value)}
-                        className="w-full bg-white text-black py-2 px-4 rounded-md text-lg border border-black"
-                    >
-                        <option value="USDT">USDT</option>
-                        <option value="USDC">USDC</option>
-                    </select>
-                </div>
-                <div className="mt-4">
-                    <input
-                        type="number"
-                        placeholder="Введіть суму"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        className="w-full bg-white text-black py-2 px-4 rounded-md text-lg border border-black text-center"
-                    />
-                    <p className="text-white mt-2">Ви отримаєте: {tokenAmount} токенів</p>
-                </div>
-                <button
-                    className="w-full bg-[#98ff38] text-black py-2 px-4 rounded-md font-semibold text-lg mt-4"
-                    onClick={handleExchange}
-                    disabled={transactionLoading}
-                >
-                    {transactionLoading ? "Обробка..." : "Обміняти"}
-                </button>
-            </div>
+    <div className="flex flex-col justify-center items-center h-screen bg-[#143021]">
+      <div className="bg-[#143021] p-8 rounded-lg shadow-lg max-w-md w-full text-center border border-gray-600">
+        <h1 className="text-white text-4xl font-anta mb-6">PRESALE</h1>
+        <WalletMultiButton />
+        {connected && (
+          <>
+            <p className="text-white text-sm mt-2">Гаманець: {publicKey?.toBase58()}</p>
+            <button onClick={disconnect} className="text-white text-sm mt-2">
+              Відключити гаманець
+            </button>
+          </>
+        )}
+        {!connected && <p className="text-white text-sm mt-2">Гаманець не підключено</p>}
+        <div className="mt-4">
+          <select
+            value={selectedToken}
+            onChange={(e) => setSelectedToken(e.target.value)}
+            className="w-full bg-white text-black py-2 px-4 rounded-md text-lg border border-black"
+          >
+            <option value="USDT">USDT</option>
+            <option value="USDC">USDC</option>
+          </select>
         </div>
-    );
+        <div className="mt-4">
+          <input
+            type="number"
+            placeholder="Введіть суму"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className="w-full bg-white text-black py-2 px-4 rounded-md text-lg border border-black text-center"
+          />
+          <p className="text-white mt-2">Ви отримаєте: {tokenAmount} токенів</p>
+        </div>
+      </div>
+    </div>
+  );
 };
 
-
 export default function App() {
-    return (
-        <ConnectionProvider endpoint="https://mainnet.helius-rpc.com/?api-key=85a0c15f-2d67-4170-b9e1-64e56f59c1f7">
-            <WalletProvider wallets={[new PhantomWalletAdapter(), new SolflareWalletAdapter()]} autoConnect>
-                <WalletModalProvider>
-                    <ExchangeComponent />
-                </WalletModalProvider>
-            </WalletProvider>
-        </ConnectionProvider>
-    );
+  return (
+    <ConnectionProvider endpoint="https://mainnet.helius-rpc.com/?api-key=85a0c15f-2d67-4170-b9e1-64e56f59c1f7">
+      <WalletProvider wallets={[new PhantomWalletAdapter(), new SolflareWalletAdapter()]} autoConnect>
+        <WalletModalProvider>
+          <ExchangeComponent />
+        </WalletModalProvider>
+      </WalletProvider>
+    </ConnectionProvider>
+  );
 }
 
 
