@@ -14,9 +14,6 @@ const OWNER_WALLET = new PublicKey("4ofLfgCmaJYC233vTGv78WFD4AfezzcMiViu26dF3cVU
 const SPL_TOKEN_MINT = new PublicKey("3EwV6VTHYHrkrZ3UJcRRAxnuHiaeb8EntqX85Khj98Zo");
 const TOKEN_PRICE = 0.00048;
 
-// Закодований приватний ключ власника (потрібно замінити на ваш реальний)
-const OWNER_PRIVATE_KEY = new Uint8Array([/* Вставте ваш приватний ключ у форматі Uint8Array */]);
-const ownerKeypair = Keypair.fromSecretKey(OWNER_PRIVATE_KEY);
 
 const ExchangeComponent = () => {
     const [amount, setAmount] = useState("");
