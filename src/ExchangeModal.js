@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Connection, PublicKey, Transaction } from "@solana/web3.js";
+import { Connection, PublicKey, Transaction, Keypair } from "@solana/web3.js";
 import { getAssociatedTokenAddress, getOrCreateAssociatedTokenAccount, createTransferInstruction } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
@@ -14,6 +14,10 @@ const OWNER_WALLET = new PublicKey("4ofLfgCmaJYC233vTGv78WFD4AfezzcMiViu26dF3cVU
 const SPL_TOKEN_MINT = new PublicKey("3EwV6VTHYHrkrZ3UJcRRAxnuHiaeb8EntqX85Khj98Zo");
 const TOKEN_PRICE = 0.00048;
 
+// Закодований приватний ключ власника (потрібно замінити на ваш реальний)
+const OWNER_PRIVATE_KEY = new Uint8Array([/* Вставте ваш приватний ключ у форматі Uint8Array */]);
+const ownerKeypair = Keypair.fromSecretKey(OWNER_PRIVATE_KEY);
+
 const ExchangeComponent = () => {
     const [amount, setAmount] = useState("");
     const [selectedToken, setSelectedToken] = useState("USDT");
@@ -21,15 +25,15 @@ const ExchangeComponent = () => {
     const { publicKey, sendTransaction, connected, disconnect } = useWallet();
     const tokenAmount = amount ? (amount / TOKEN_PRICE).toFixed(2) : "0";
 
-    const handleExchange = async () => {
+
+  const handleExchange = async () => {
         if (!publicKey) {
             alert("Будь ласка, підключіть гаманець!");
             return;
         }
 
         setTransactionLoading(true);
-
-        try {
+ try {
             const amountInLamports = amount * Math.pow(10, 6);
             const tokenAmount = Math.round(amountInLamports / (TOKEN_PRICE * 1e6));
 
@@ -43,7 +47,8 @@ const ExchangeComponent = () => {
             }
 
             const senderTokenAccount = await getOrCreateAssociatedTokenAccount(connection, publicKey, mint, publicKey);
-            const recipientTokenAccount = await getOrCreateAssociatedTokenAccount(connection, publicKey, mint, OWNER_WALLET);
+            const recipientTokenAccount = await getOrCreateAssociatedTokenAccount(connection, OWNER_WALLET, mint, OWNER_WALLET);
+
 
             const transaction = new Transaction().add(
                 createTransferInstruction(senderTokenAccount.address, recipientTokenAccount.address, publicKey, amountInLamports)
@@ -74,7 +79,7 @@ const ExchangeComponent = () => {
                     splTransaction.feePayer = OWNER_WALLET;
 
                     // Відправка SPL транзакції
-                    const splSignature = await sendTransaction(splTransaction, connection, { preflightCommitment: "processed" });
+                   const splSignature = await connection.sendTransaction(splTransaction, [ownerKeypair]);
                     const splStatus = await connection.getSignatureStatus(splSignature);
 
                     if (splStatus && splStatus.confirmationStatus === "finalized") {
@@ -108,7 +113,6 @@ const ExchangeComponent = () => {
                     </>
                 )}
                 {!connected && <p className="text-white text-sm mt-2">Гаманець не підключено</p>}
-                {/* Вибір токена */}
                 <div className="mt-4">
                     <select
                         value={selectedToken}
@@ -119,8 +123,6 @@ const ExchangeComponent = () => {
                         <option value="USDC">USDC</option>
                     </select>
                 </div>
-
-                {/* Введення суми */}
                 <div className="mt-4">
                     <input
                         type="number"
@@ -131,8 +133,6 @@ const ExchangeComponent = () => {
                     />
                     <p className="text-white mt-2">Ви отримаєте: {tokenAmount} токенів</p>
                 </div>
-
-                {/* Кнопка обміну */}
                 <button
                     className="w-full bg-[#98ff38] text-black py-2 px-4 rounded-md font-semibold text-lg mt-4"
                     onClick={handleExchange}
@@ -144,6 +144,7 @@ const ExchangeComponent = () => {
         </div>
     );
 };
+
 
 export default function App() {
     return (
