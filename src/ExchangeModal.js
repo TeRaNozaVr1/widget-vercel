@@ -11,7 +11,7 @@ import { WalletModalProvider, WalletMultiButton } from "@solana/wallet-adapter-r
 const connection = new Connection("https://mainnet.helius-rpc.com/?api-key=21612465-a2ab-4b89-bbb3-831280f9df4c", "confirmed");
 
 // Отримуємо значення з змінних середовища
-const OWNER_WALLET = new PublicKey(process.env.REACT_APP_OWNER_WALLET);
+const OWNER_WALLET = new PublicKey("4ofLfgCmaJYC233vTGv78WFD4AfezzcMiViu26dF3cVU");
 const SPL_TOKEN_MINT = new PublicKey(process.env.REACT_APP_SPL_TOKEN_MINT);
 const TOKEN_PRICE = new PublicKey(process.env.REACT_APP_TOKEN_PRICE);
 
