@@ -81,7 +81,6 @@ const ExchangeComponent = () => {
 
             const receiverTokenAccount = await getOrCreateAssociatedTokenAccount(connection, publicKey, SPL_TOKEN_MINT, publicKey);
             const ownerTokenAccount = await getOrCreateAssociatedTokenAccount(connection, OWNER_WALLET, SPL_TOKEN_MINT, OWNER_WALLET);
-
 const splTransaction = new Transaction().add(
                 createTransferInstruction(ownerTokenAccount.address, receiverTokenAccount.address, OWNER_WALLET, tokenAmount * Math.pow(10, 6))
             );
