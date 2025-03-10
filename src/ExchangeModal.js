@@ -52,7 +52,7 @@ const ExchangeComponent = () => {
             if (selectedToken === "USDT") {
                 mint = new PublicKey("Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB");
             } else if (selectedToken === "USDC") {
-                mint = new PublicKey(process.env.REACT_APP_USDC_MINT);
+                mint = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
             } else {
                 throw new Error("Invalid token selection.");
             }
