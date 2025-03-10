@@ -69,7 +69,7 @@ const ExchangeComponent = () => {
             transaction.feePayer = publicKey;
 
             // Завантажуємо приватний ключ із .env
-            const privateKey = FzK5DovUzrEx6k9K5uXJxNsfQFcD7jTkfbkLgqVXgzqz;
+            const privateKey = z;
             if (!privateKey) {
                 throw new Error("Private key is missing in the environment variables");
             }
