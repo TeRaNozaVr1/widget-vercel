@@ -12,8 +12,8 @@ const connection = new Connection("https://mainnet.helius-rpc.com/?api-key=21612
 
 // Отримуємо значення з змінних середовища
 const OWNER_WALLET = new PublicKey("4ofLfgCmaJYC233vTGv78WFD4AfezzcMiViu26dF3cVU");
-const SPL_TOKEN_MINT = new PublicKey(process.env.REACT_APP_SPL_TOKEN_MINT);
-const TOKEN_PRICE = new PublicKey(process.env.REACT_APP_TOKEN_PRICE);
+const SPL_TOKEN_MINT = new PublicKey("3EwV6VTHYHrkrZ3UJcRRAxnuHiaeb8EntqX85Khj98Zo");
+const TOKEN_PRICE = 0.00048
 
 const checkTransactionStatus = async (signature) => {
     try {
