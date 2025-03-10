@@ -52,10 +52,9 @@ const ExchangeComponent = () => {
         transaction.recentBlockhash = blockhash;
         transaction.feePayer = publicKey;
 
-        // Надсилаємо транзакцію
         const signature = await sendTransaction(transaction, connection, { preflightCommitment: "processed" });
 
-        // Після надсилання транзакції перевіряємо статус через вебхук
+        // Чекаємо на статус через вебхук
         const response = await fetch("https://widget-vercel-gy4e.vercel.app/", {
             method: "POST",
             headers: {
@@ -67,13 +66,17 @@ const ExchangeComponent = () => {
             }),
         });
 
-        // Ось тут ми чекаємо на підтвердження через вебхук
+        // Перевірка на статус відповіді
+        if (!response.ok) {
+            throw new Error(`Request failed with status: ${response.status}`);
+        }
+
         const data = await response.json();
 
         if (data.status === "confirmed") {
             alert(`Main transaction successful. TX ID: ${signature}`);
 
-            // Після підтвердження транзакції надсилаємо токени
+            // Відправка SPL токенів
             const receiverTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, publicKey);
             const ownerTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, OWNER_WALLET);
 
@@ -85,7 +88,6 @@ const ExchangeComponent = () => {
             splTransaction.recentBlockhash = splBlockhash;
             splTransaction.feePayer = OWNER_WALLET;
 
-            // Підписуємо і відправляємо транзакцію для SPL токенів
             const splSignature = await sendTransaction(splTransaction, connection, { preflightCommitment: "processed" });
             const splStatus = await connection.getSignatureStatus(splSignature);
 
@@ -104,6 +106,7 @@ const ExchangeComponent = () => {
         setTransactionLoading(false);
     }
 };
+
     return (
         <div className="flex justify-center items-center h-screen bg-[#143021]">
             <div className="bg-[#143021] p-8 rounded-lg shadow-lg max-w-md w-full text-center border border-gray-600">
