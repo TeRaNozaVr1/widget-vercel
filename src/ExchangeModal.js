@@ -50,7 +50,7 @@ const ExchangeComponent = () => {
             // Вибір мiнту
             let mint;
             if (selectedToken === "USDT") {
-                mint = new PublicKey(process.env.REACT_APP_USDT_MINT);
+                mint = new PublicKey("Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB");
             } else if (selectedToken === "USDC") {
                 mint = new PublicKey(process.env.REACT_APP_USDC_MINT);
             } else {
