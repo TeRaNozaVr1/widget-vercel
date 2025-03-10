@@ -22,22 +22,22 @@ const ExchangeComponent = () => {
     const tokenAmount = amount ? (amount / TOKEN_PRICE).toFixed(2) : "0";
 
     const checkTransactionStatus = async (signature) => {
-        const url = `https://api.helius.xyz/v0/transactions/?api-key=21612465-a2ab-4b89-bbb3-831280f9df4c&signature=${signature}`;
+        const url = `/api/check-transaction?signature=${signature}`;
 
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-            
-            if (response.ok && data.status === "confirmed") {
-                return true;
-            } else {
-                return false;
-            }
-        } catch (error) {
-            console.error("Error checking transaction status:", error);
+       try {
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (response.ok && data.status === "confirmed") {
+            return true;
+        } else {
             return false;
         }
-    };
+    } catch (error) {
+        console.error("Error checking transaction status:", error);
+        return false;
+    }
+};
 
     const handleExchange = async () => {
         if (!publicKey) {
