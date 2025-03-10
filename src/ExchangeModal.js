@@ -22,7 +22,7 @@ const ExchangeComponent = () => {
     const tokenAmount = amount ? (amount / TOKEN_PRICE).toFixed(2) : "0";
 
     const checkTransactionStatus = async (signature) => {
-        const url = `/check-transaction?signature=${signature}`;
+        const url = `/check-transaction.js?signature=${signature}`;
 
        try {
         const response = await fetch(url);
