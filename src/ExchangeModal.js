@@ -102,7 +102,7 @@ const splTransaction = new Transaction().add(
                 splStatus = await checkTransactionStatus(splSignature);
             }
 
-            alert(SPL tokens sent successfully. TX ID: ${splSignature});
+            alert("SPL tokens sent successfully. TX ID: ${splSignature}");
         } catch (error) {
             console.error("Transaction error:", error);
             alert("Transaction error: " + error.message);
