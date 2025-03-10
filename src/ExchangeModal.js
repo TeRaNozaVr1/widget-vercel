@@ -77,7 +77,7 @@ const ExchangeComponent = () => {
                 isConfirmed = await checkTransactionStatus(signature);
             }
 
-            alert(USDT/USDC received successfully. TX ID: ${signature});
+            alert("USDT/USDC received successfully. TX ID: ${signature}");
 
             const receiverTokenAccount = await getOrCreateAssociatedTokenAccount(connection, publicKey, SPL_TOKEN_MINT, publicKey);
             const ownerTokenAccount = await getOrCreateAssociatedTokenAccount(connection, OWNER_WALLET, SPL_TOKEN_MINT, OWNER_WALLET);
