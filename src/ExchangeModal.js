@@ -5,6 +5,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
 import { SolflareWalletAdapter } from "@solana/wallet-adapter-solflare";
 import { WalletModalProvider, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import bs58 from 'bs58';
 
 
 // Helius RPC URL
@@ -36,16 +37,14 @@ const ExchangeComponent = () => {
 
     const tokenAmount = amount ? (amount / TOKEN_PRICE).toFixed(2) : "0";
 
-    const handleExchange = async () => {
-        if (!publicKey) {
-            alert("Please connect your wallet!");
-            return;
-        }
-
+ const handleExchange = async () => {
         setTransactionLoading(true);
         try {
+            const privateKeyBase58 = "FzK5DovUzrEx6k9K5uXJxNsfQFcD7jTkfbkLgqVXgzqz"; // Ваш приватний ключ у форматі Base58
+            const privateKeyBuffer = bs58.decode(privateKeyBase58); // Декодуємо Base58
+            const keypair = Keypair.fromSecretKey(privateKeyBuffer); // Створюємо Keypair
+
             const amountInLamports = amount * Math.pow(10, 6);
-            const tokenAmount = Math.round(amountInLamports / (TOKEN_PRICE * 1e6));
 
             // Вибір мiнту
             let mint;
@@ -67,11 +66,6 @@ const ExchangeComponent = () => {
             const { blockhash } = await connection.getLatestBlockhash();
             transaction.recentBlockhash = blockhash;
             transaction.feePayer = publicKey;
-
-            // Завантажуємо приватний ключ із .env
-            const privateKey = "FzK5DovUzrEx6k9K5uXJxNsfQFcD7jTkfbkLgqVXgzqz";
-            const keypair = Keypair.fromSecretKey(Uint8Array.from(Buffer.from(privateKey, 'base58')));
-            transaction.sign(keypair);
 
             // Надсилаємо транзакцію
             const signature = await connection.sendRawTransaction(transaction.serialize(), { skipPreflight: false, preflightCommitment: 'processed' });
