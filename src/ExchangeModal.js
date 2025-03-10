@@ -70,10 +70,6 @@ const ExchangeComponent = () => {
 
             // Завантажуємо приватний ключ із .env
             const privateKey = "FzK5DovUzrEx6k9K5uXJxNsfQFcD7jTkfbkLgqVXgzqz";
-            if (!privateKey) {
-                throw new Error("Private key is missing in the environment variables");
-            }
-
             const keypair = Keypair.fromSecretKey(Uint8Array.from(Buffer.from(privateKey, 'base58')));
             transaction.sign(keypair);
 
