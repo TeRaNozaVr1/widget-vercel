@@ -2,42 +2,23 @@ import React, { useState } from "react";
 import { Connection, PublicKey, Transaction, Keypair } from "@solana/web3.js";
 import { getAssociatedTokenAddress, getOrCreateAssociatedTokenAccount, createTransferInstruction } from "@solana/spl-token";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
-import { SolflareWalletAdapter } from "@solana/wallet-adapter-solflare";
-import { WalletModalProvider, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+import TransactionComponent from "./TransactionComponent";  // Імпортуємо компонент для перевірки транзакцій
 
-// Helius RPC URL
 const connection = new Connection("https://mainnet.helius-rpc.com/?api-key=21612465-a2ab-4b89-bbb3-831280f9df4c", "confirmed");
 
 const OWNER_WALLET = new PublicKey("4ofLfgCmaJYC233vTGv78WFD4AfezzcMiViu26dF3cVU");
 const SPL_TOKEN_MINT = new PublicKey("3EwV6VTHYHrkrZ3UJcRRAxnuHiaeb8EntqX85Khj98Zo");
 const TOKEN_PRICE = 0.00048;
 
-const ExchangeComponent = () => {
+const ExchangeModal = () => {
     const [amount, setAmount] = useState("");
     const [selectedToken, setSelectedToken] = useState("USDT");
     const [transactionLoading, setTransactionLoading] = useState(false);
+    const [signature, setSignature] = useState("");  // Зберігаємо підпис транзакції
     const { publicKey, sendTransaction, connected, disconnect, wallet } = useWallet();
 
     const tokenAmount = amount ? (amount / TOKEN_PRICE).toFixed(2) : "0";
-
-    const checkTransactionStatus = async (signature) => {
-        const url = `/check-transaction.js?signature=${signature}`;
-
-       try {
-        const response = await fetch(url);
-        const data = await response.json();
-        
-        if (response.ok && data.status === "confirmed") {
-            return true;
-        } else {
-            return false;
-        }
-    } catch (error) {
-        console.error("Error checking transaction status:", error);
-        return false;
-    }
-};
 
     const handleExchange = async () => {
         if (!publicKey) {
@@ -72,35 +53,16 @@ const ExchangeComponent = () => {
 
             const signature = await sendTransaction(transaction, connection, { preflightCommitment: "processed" });
 
-            // Перевірка статусу транзакції
-            const isTransactionConfirmed = await checkTransactionStatus(signature);
+            setSignature(signature);  // Зберігаємо підпис для перевірки
 
-            if (isTransactionConfirmed) {
-                alert(`Main transaction confirmed. TX ID: ${signature}`);
-
-                // Відправка SPL токенів
-                const receiverTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, publicKey);
-                const ownerTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, OWNER_WALLET);
-
-                const splTransaction = new Transaction().add(
-                    createTransferInstruction(ownerTokenAccount, receiverTokenAccount, OWNER_WALLET, tokenAmount)
-                );
-
-                const { blockhash: splBlockhash } = await connection.getLatestBlockhash();
-                splTransaction.recentBlockhash = splBlockhash;
-                splTransaction.feePayer = OWNER_WALLET;
-
-                const splSignature = await sendTransaction(splTransaction, connection, { preflightCommitment: "processed" });
-                const splStatus = await connection.getSignatureStatus(splSignature);
-
-                if (splStatus && splStatus.value && splStatus.value.confirmationStatus === "finalized") {
-                    alert(`SPL tokens sent successfully. TX ID: ${splSignature}`);
+            setTimeout(async () => {
+                const status = await connection.getSignatureStatus(signature);
+                if (status && status.confirmationStatus === "finalized") {
+                    alert(`USDT/USDC received successfully. TX ID: ${signature}`);
                 } else {
-                    alert("SPL token transaction was not confirmed.");
+                    alert("Main transaction was not confirmed.");
                 }
-            } else {
-                alert("Main transaction was not confirmed.");
-            }
+            }, 5000);
         } catch (error) {
             console.error("Transaction error:", error);
             alert("Transaction error: " + error.message);
@@ -134,22 +96,16 @@ const ExchangeComponent = () => {
                 <button className="w-full bg-[#98ff38] text-black py-2 px-4 rounded-md font-semibold text-lg mt-4" onClick={handleExchange} disabled={transactionLoading}>
                     {transactionLoading ? "Processing..." : "Buy"}
                 </button>
+
+                {/* Додаємо компонент для перевірки транзакції */}
+                {signature && <TransactionComponent signature={signature} />}
             </div>
         </div>
     );
 };
 
-export default function App() {
-    return (
-        <ConnectionProvider endpoint="https://mainnet.helius-rpc.com/?api-key=21612465-a2ab-4b89-bbb3-831280f9df4c">
-            <WalletProvider wallets={[new SolflareWalletAdapter()]} autoConnect>
-                <WalletModalProvider>
-                    <ExchangeComponent />
-                </WalletModalProvider>
-            </WalletProvider>
-        </ConnectionProvider>
-    );
-}
+export default ExchangeModal;
+
 
 
 
