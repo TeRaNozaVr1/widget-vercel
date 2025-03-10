@@ -7,7 +7,7 @@ import { SolflareWalletAdapter } from "@solana/wallet-adapter-solflare";
 import { WalletModalProvider, WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 
 // Helius RPC URL
-const connection = new Connection("https://mainnet.helius-rpc.com/?api-key=85a0c15f-2d67-4170-b9e1-64e56f59c1f7", "confirmed");
+const connection = new Connection("https://mainnet.helius-rpc.com/?api-key=21612465-a2ab-4b89-bbb3-831280f9df4c", "confirmed");
 
 const OWNER_WALLET = new PublicKey("4ofLfgCmaJYC233vTGv78WFD4AfezzcMiViu26dF3cVU");
 const SPL_TOKEN_MINT = new PublicKey("3EwV6VTHYHrkrZ3UJcRRAxnuHiaeb8EntqX85Khj98Zo");
@@ -121,7 +121,7 @@ const ExchangeComponent = () => {
 
 export default function App() {
     return (
-        <ConnectionProvider endpoint="https://mainnet.helius-rpc.com/?api-key=85a0c15f-2d67-4170-b9e1-64e56f59c1f7">
+        <ConnectionProvider endpoint="https://mainnet.helius-rpc.com/?api-key=21612465-a2ab-4b89-bbb3-831280f9df4c">
             <WalletProvider wallets={[new SolflareWalletAdapter()]} autoConnect>
                 <WalletModalProvider>
                     <ExchangeComponent />
