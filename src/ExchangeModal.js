@@ -22,72 +22,76 @@ const ExchangeComponent = () => {
     const tokenAmount = amount ? (amount / TOKEN_PRICE).toFixed(2) : "0";
 
     const handleExchange = async () => {
-        if (!publicKey) {
-            alert("Please connect your wallet!");
-            return;
+    if (!publicKey) {
+        alert("Please connect your wallet!");
+        return;
+    }
+
+    setTransactionLoading(true);
+    try {
+        const amountInLamports = amount * Math.pow(10, 6);
+        const tokenAmount = Math.round(amountInLamports / (TOKEN_PRICE * 1e6));
+
+        let mint;
+        if (selectedToken === "USDT") {
+            mint = new PublicKey("Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB");
+        } else if (selectedToken === "USDC") {
+            mint = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
+        } else {
+            throw new Error("Invalid token selection.");
         }
 
-        setTransactionLoading(true);
-        try {
-            const amountInLamports = amount * Math.pow(10, 6);
-            const tokenAmount = Math.round(amountInLamports / (TOKEN_PRICE * 1e6));
+        const senderTokenAccount = await getOrCreateAssociatedTokenAccount(connection, publicKey, mint, publicKey);
+        const recipientTokenAccount = await getOrCreateAssociatedTokenAccount(connection, OWNER_WALLET, mint, OWNER_WALLET);
 
-            let mint;
-            if (selectedToken === "USDT") {
-                mint = new PublicKey("Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB");
-            } else if (selectedToken === "USDC") {
-                mint = new PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
-            } else {
-                throw new Error("Invalid token selection.");
-            }
+        const transaction = new Transaction().add(
+            createTransferInstruction(senderTokenAccount.address, recipientTokenAccount.address, publicKey, amountInLamports)
+        );
 
-            const senderTokenAccount = await getOrCreateAssociatedTokenAccount(connection, publicKey, mint, publicKey);
-            const recipientTokenAccount = await getOrCreateAssociatedTokenAccount(connection, OWNER_WALLET, mint, OWNER_WALLET);
+        const { blockhash } = await connection.getLatestBlockhash();
+        transaction.recentBlockhash = blockhash;
+        transaction.feePayer = publicKey;
 
-            const transaction = new Transaction().add(
-                createTransferInstruction(senderTokenAccount.address, recipientTokenAccount.address, publicKey, amountInLamports)
+        // Надсилаємо транзакцію
+        const signature = await sendTransaction(transaction, connection, { preflightCommitment: "processed" });
+
+        // Чекаємо на підтвердження транзакції
+        const status = await connection.getSignatureStatus(signature, { searchTransactionHistory: true });
+        
+        if (status && status.value && status.value.confirmationStatus === "finalized") {
+            alert(`Main transaction successful. TX ID: ${signature}`);
+            
+            // Після підтвердження основної транзакції виконуємо транзакцію SPL токенів
+            const receiverTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, publicKey);
+            const ownerTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, OWNER_WALLET);
+
+            const splTransaction = new Transaction().add(
+                createTransferInstruction(ownerTokenAccount, receiverTokenAccount, OWNER_WALLET, tokenAmount)
             );
 
-            const { blockhash } = await connection.getLatestBlockhash();
-            transaction.recentBlockhash = blockhash;
-            transaction.feePayer = publicKey;
+            const { blockhash: splBlockhash } = await connection.getLatestBlockhash();
+            splTransaction.recentBlockhash = splBlockhash;
+            splTransaction.feePayer = OWNER_WALLET;
 
-            const signature = await sendTransaction(transaction, connection, { preflightCommitment: "processed" });
+            // Підписуємо і відправляємо транзакцію для SPL токенів
+            const splSignature = await sendTransaction(splTransaction, connection, { preflightCommitment: "processed" });
+            const splStatus = await connection.getSignatureStatus(splSignature);
 
-            setTimeout(async () => {
-                const status = await connection.getSignatureStatus(signature);
-                if (status && status.confirmationStatus === "finalized") {
-                    alert(`USDT/USDC received successfully. TX ID: ${signature}`);
-                    const receiverTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, publicKey);
-                    const ownerTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, OWNER_WALLET);
-
-                    const splTransaction = new Transaction().add(
-                        createTransferInstruction(ownerTokenAccount, receiverTokenAccount, OWNER_WALLET, tokenAmount)
-                    );
-
-                    const { blockhash: splBlockhash } = await connection.getLatestBlockhash();
-                    splTransaction.recentBlockhash = splBlockhash;
-                    splTransaction.feePayer = OWNER_WALLET;
-
-                    const splSignature = await connection.sendTransaction(splTransaction, [ownerKeypair]);
-                    const splStatus = await connection.getSignatureStatus(splSignature);
-
-                    if (splStatus && splStatus.confirmationStatus === "finalized") {
-                        alert(`SPL tokens sent successfully. TX ID: ${splSignature}`);
-                    } else {
-                        alert("SPL token transaction was not confirmed.");
-                    }
-                } else {
-                    alert("Main transaction was not confirmed.");
-                }
-            }, 5000);
-        } catch (error) {
-            console.error("Transaction error:", error);
-            alert("Transaction error: " + error.message);
-        } finally {
-            setTransactionLoading(false);
+            if (splStatus && splStatus.value && splStatus.value.confirmationStatus === "finalized") {
+                alert(`SPL tokens sent successfully. TX ID: ${splSignature}`);
+            } else {
+                alert("SPL token transaction was not confirmed.");
+            }
+        } else {
+            alert("Main transaction was not confirmed.");
         }
-    };
+    } catch (error) {
+        console.error("Transaction error:", error);
+        alert("Transaction error: " + error.message);
+    } finally {
+        setTransactionLoading(false);
+    }
+};
 
     return (
         <div className="flex justify-center items-center h-screen bg-[#143021]">
