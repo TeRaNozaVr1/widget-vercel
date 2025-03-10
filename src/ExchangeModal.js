@@ -21,7 +21,7 @@ const ExchangeComponent = () => {
 
     const tokenAmount = amount ? (amount / TOKEN_PRICE).toFixed(2) : "0";
 
-   const handleExchange = async () => {
+  const handleExchange = async () => {
     if (!publicKey) {
         alert("Please connect your wallet!");
         return;
@@ -55,8 +55,8 @@ const ExchangeComponent = () => {
         // Надсилаємо транзакцію
         const signature = await sendTransaction(transaction, connection, { preflightCommitment: "processed" });
 
-        // Перевірка статусу транзакції через Helius
-        const response = await fetch("https://api.helius.xyz/v0/transaction/status", {
+        // Перевірка статусу транзакції через Helius або іншими методами
+        const response = await fetch("https://mainnet.helius-rpc.com/?api-key=21612465-a2ab-4b89-bbb3-831280f9df4c", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -71,6 +71,23 @@ const ExchangeComponent = () => {
 
         if (data.status === "confirmed") {
             alert(`Main transaction successful. TX ID: ${signature}`);
+
+            // Надсилання інформації до вебхука
+            await fetch("https://widget-vercel-gy4e.vercel.app/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    txId: signature,
+                    status: "confirmed",
+                    amount: tokenAmount,
+                    sender: publicKey.toBase58(),
+                    recipient: OWNER_WALLET.toBase58(),
+                    type: "TRANSFER",
+                    network: "mainnet",
+                }),
+            });
 
             // Після підтвердження основної транзакції виконуємо транзакцію SPL токенів
             const receiverTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, publicKey);
@@ -103,6 +120,7 @@ const ExchangeComponent = () => {
         setTransactionLoading(false);
     }
 };
+
 
 
 
