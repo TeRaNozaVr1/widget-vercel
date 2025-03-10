@@ -77,12 +77,12 @@ const ExchangeComponent = () => {
                 isConfirmed = await checkTransactionStatus(signature);
             }
 
-            alert(`USDT/USDC received successfully. TX ID: ${signature}`);
+            alert(USDT/USDC received successfully. TX ID: ${signature});
 
             const receiverTokenAccount = await getOrCreateAssociatedTokenAccount(connection, publicKey, SPL_TOKEN_MINT, publicKey);
             const ownerTokenAccount = await getOrCreateAssociatedTokenAccount(connection, OWNER_WALLET, SPL_TOKEN_MINT, OWNER_WALLET);
 
-            const splTransaction = new Transaction().add(
+const splTransaction = new Transaction().add(
                 createTransferInstruction(ownerTokenAccount.address, receiverTokenAccount.address, OWNER_WALLET, tokenAmount * Math.pow(10, 6))
             );
 
@@ -103,7 +103,7 @@ const ExchangeComponent = () => {
                 splStatus = await checkTransactionStatus(splSignature);
             }
 
-            alert(`SPL tokens sent successfully. TX ID: ${splSignature}`);
+            alert(SPL tokens sent successfully. TX ID: ${splSignature});
         } catch (error) {
             console.error("Transaction error:", error);
             alert("Transaction error: " + error.message);
@@ -153,8 +153,3 @@ export default function App() {
         </ConnectionProvider>
     );
 }
-
-
-
-
-
