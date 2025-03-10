@@ -55,11 +55,21 @@ const ExchangeComponent = () => {
         // Надсилаємо транзакцію
         const signature = await sendTransaction(transaction, connection, { preflightCommitment: "processed" });
 
-        // Перевіряємо статус транзакції через Helius RPC API
-        const response = await fetch(`https://mainnet.helius-rpc.com/?api-key=21612465-a2ab-4b89-bbb3-831280f9df4c&signature=${signature}`);
+        // Перевірка статусу транзакції через Helius
+        const response = await fetch("https://api.helius.xyz/v0/transaction/status", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                apiKey: "21612465-a2ab-4b89-bbb3-831280f9df4c",
+                signature: signature
+            }),
+        });
+
         const data = await response.json();
 
-        if (data && data.result && data.result.confirmationStatus === "finalized") {
+        if (data.status === "confirmed") {
             alert(`Main transaction successful. TX ID: ${signature}`);
 
             // Після підтвердження основної транзакції виконуємо транзакцію SPL токенів
@@ -93,6 +103,7 @@ const ExchangeComponent = () => {
         setTransactionLoading(false);
     }
 };
+
 
 
     return (
