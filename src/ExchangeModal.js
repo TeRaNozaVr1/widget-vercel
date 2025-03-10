@@ -21,7 +21,7 @@ const ExchangeComponent = () => {
 
     const tokenAmount = amount ? (amount / TOKEN_PRICE).toFixed(2) : "0";
 
-    const handleExchange = async () => {
+   const handleExchange = async () => {
     if (!publicKey) {
         alert("Please connect your wallet!");
         return;
@@ -55,12 +55,13 @@ const ExchangeComponent = () => {
         // Надсилаємо транзакцію
         const signature = await sendTransaction(transaction, connection, { preflightCommitment: "processed" });
 
-        // Чекаємо на підтвердження транзакції
-        const status = await connection.getSignatureStatus(signature, { searchTransactionHistory: true });
-        
-        if (status && status.value && status.value.confirmationStatus === "finalized") {
+        // Перевіряємо статус транзакції через Helius RPC API
+        const response = await fetch(`https://mainnet.helius-rpc.com/?api-key=21612465-a2ab-4b89-bbb3-831280f9df4c&signature=${signature}`);
+        const data = await response.json();
+
+        if (data && data.result && data.result.confirmationStatus === "finalized") {
             alert(`Main transaction successful. TX ID: ${signature}`);
-            
+
             // Після підтвердження основної транзакції виконуємо транзакцію SPL токенів
             const receiverTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, publicKey);
             const ownerTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, OWNER_WALLET);
@@ -92,6 +93,7 @@ const ExchangeComponent = () => {
         setTransactionLoading(false);
     }
 };
+
 
     return (
         <div className="flex justify-center items-center h-screen bg-[#143021]">
