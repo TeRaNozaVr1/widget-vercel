@@ -21,7 +21,7 @@ const ExchangeComponent = () => {
 
     const tokenAmount = amount ? (amount / TOKEN_PRICE).toFixed(2) : "0";
 
-  const handleExchange = async () => {
+ const handleExchange = async () => {
     if (!publicKey) {
         alert("Please connect your wallet!");
         return;
@@ -55,41 +55,25 @@ const ExchangeComponent = () => {
         // Надсилаємо транзакцію
         const signature = await sendTransaction(transaction, connection, { preflightCommitment: "processed" });
 
-        // Перевірка статусу транзакції через Helius або іншими методами
-        const response = await fetch("https://mainnet.helius-rpc.com/?api-key=21612465-a2ab-4b89-bbb3-831280f9df4c", {
+        // Після надсилання транзакції перевіряємо статус через вебхук
+        const response = await fetch("https://widget-vercel-gy4e.vercel.app/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                apiKey: "21612465-a2ab-4b89-bbb3-831280f9df4c",
-                signature: signature
+                txId: signature,
+                status: "pending",  // Статус поки що "pending", чекаємо підтвердження
             }),
         });
 
+        // Ось тут ми чекаємо на підтвердження через вебхук
         const data = await response.json();
 
         if (data.status === "confirmed") {
             alert(`Main transaction successful. TX ID: ${signature}`);
 
-            // Надсилання інформації до вебхука
-            await fetch("https://widget-vercel-gy4e.vercel.app/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    txId: signature,
-                    status: "confirmed",
-                    amount: tokenAmount,
-                    sender: publicKey.toBase58(),
-                    recipient: OWNER_WALLET.toBase58(),
-                    type: "TRANSFER",
-                    network: "mainnet",
-                }),
-            });
-
-            // Після підтвердження основної транзакції виконуємо транзакцію SPL токенів
+            // Після підтвердження транзакції надсилаємо токени
             const receiverTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, publicKey);
             const ownerTokenAccount = await getAssociatedTokenAddress(SPL_TOKEN_MINT, OWNER_WALLET);
 
@@ -120,10 +104,6 @@ const ExchangeComponent = () => {
         setTransactionLoading(false);
     }
 };
-
-
-
-
     return (
         <div className="flex justify-center items-center h-screen bg-[#143021]">
             <div className="bg-[#143021] p-8 rounded-lg shadow-lg max-w-md w-full text-center border border-gray-600">
