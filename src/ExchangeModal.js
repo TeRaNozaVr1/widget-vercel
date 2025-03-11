@@ -31,7 +31,7 @@ const ExchangeComponent = () => {
     const [transactionLoading, setTransactionLoading] = useState(false);
     const { publicKey, sendTransaction, connected, disconnect } = useWallet();
 
-    const tokenAmount = amount ? (amount * (1 / TOKEN_PRICE)).toFixed(0) : "0";
+    const tokenAmount = amount ? Math.floor(amount / TOKEN_PRICE) : "0";
 
     const handleExchange = async () => {
         if (!publicKey) return alert("Wallet not connected");
