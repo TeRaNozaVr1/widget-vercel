@@ -31,8 +31,8 @@ const ExchangeComponent = () => {
     const [transactionLoading, setTransactionLoading] = useState(false);
     const { publicKey, sendTransaction, connected, disconnect } = useWallet();
 
-    const tokenAmount = amount ? Math.floor(amount / ( TOKEN_PRICE* 100 ) ) : "0";
-
+    const tokenAmount = amount ? Math.floor(amount / TOKEN_PRICE)* 100 : "0";
+const tokensAmount = amount ? (amount / TOKEN_PRICE) .toFixed(0) : "0";
     const handleExchange = async () => {
         if (!publicKey) return alert("Wallet not connected");
         setTransactionLoading(true);
@@ -120,7 +120,7 @@ const ExchangeComponent = () => {
                 </div>
                 <div className="mt-4">
                     <input type="number" placeholder="Enter the amount" value={amount} onChange={(e) => setAmount(e.target.value)} className="w-full bg-white text-black py-2 px-4 rounded-md text-lg border border-black text-center" />
-                    <p className="text-white mt-2">You will get: {tokenAmount} tokens</p>
+                    <p className="text-white mt-2">You will get: {tokensAmount} BNB</p>
                 </div>
                 <button className="w-full bg-[#98ff38] text-black py-2 px-4 rounded-md font-semibold text-lg mt-4" onClick={handleExchange} disabled={transactionLoading}>
                     {transactionLoading ? "Processing..." : "Buy"}
